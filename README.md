@@ -2,7 +2,6 @@
 
 A multi-document prompt that turns an idea into a documented, guarded, tested and branch-disciplined repository with a live Project Hub, the way the OruSchools platform was built. It is **generic**: nothing in these files assumes schools, Flutter, NestJS or any other stack. The agent learns what you are building by asking you, proposes an architecture, you approve it, and only then does it write documents, guardrails, checks, the hub and code.
 
-Version 0.1, written 2026-10-31 from how OruSchools is organised (checked against its files). **It has not yet been run end to end on a fresh project.** Section 3.4 says how to pilot it safely before relying on it company-wide.
 
 ---
 
