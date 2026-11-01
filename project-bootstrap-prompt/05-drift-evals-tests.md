@@ -31,7 +31,8 @@ A single script that exits non-zero on any **error** (and on warnings with `--st
 | 12 | `adr-integrity` | Each ADR has a status; every "Accepted" ADR names its enforcement; ADR numbers are unique and sequential. | error |
 | 13 | `glossary-dup` | No term is defined twice with different meaning. | warning |
 | 14 | `rule-links` | Every rule ID cited (`E-xxx`, `ADR-nnnn`, `G-nn`) exists. | error |
-| 15 | project rules | The project's own mechanical rules (for example "no physical left/right in layout code", "no network fonts", "no `Float` money field", "no hard-coded colour"). One check per rule; each links the guardrail it enforces. | error |
+| 15 | `hub-fresh` | (if the hub keeps data in the repo) plan data IDs match the implementation plan; no ID duplicated; the git tab's read date is not older than N days | warning |
+| 16 | project rules | The project's own mechanical rules (for example "no physical left/right in layout code", "no network fonts", "no `Float` money field", "no hard-coded colour"). One check per rule; each links the guardrail it enforces. | error |
 
 ### `drift-config.json` shape
 ```json

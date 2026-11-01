@@ -40,6 +40,7 @@ Do not ask everything if the answer is already obvious from earlier answers. Do 
 17. Where will it run (a cloud, your own servers, a managed backend) and who operates it? Any company standards (languages, clouds, security reviews) that **must** be followed?
 18. Who builds it? How many people, which skills, which tools do they already use? Default: choose the fewest moving parts the team already knows.
 19. Where is the code hosted, and how do you want changes reviewed and released? Default: the branching model in `06`.
+19b. Where should the owner read progress, screens and architecture, and who may view or review? Default: a private Project Hub page (`09`) with edit rights for the owner only; say which page host your company uses.
 
 ## F. Quality bar and constraints
 20. Accessibility, performance, browser or device targets, design system or brand rules?

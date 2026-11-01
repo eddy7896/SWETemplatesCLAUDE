@@ -1,0 +1,1 @@
+{ "items": [{ "term": "ADR", "definition": "Architecture Decision Record: one decision, why, and what follows. An accepted ADR outranks code and chat.", "group": "Process" }] }

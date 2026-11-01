@@ -18,7 +18,8 @@ documentation/
   environment.md                           # versions, how to run locally, ports, secrets handling (names only)
   implementation_plan.md                   # phases and task IDs (see 08)
   phaseN_plan.md / phaseN_gate.md          # per phase: tasks, acceptance, then the gate evidence
-  live_documents.md                        # which docs are living, who updates them, when
+  live_documents.md                        # which docs are living, who updates them, when (include the Project Hub)
+  hub/                                     # the Project Hub page and data (from hub-template/), or a link to where it is hosted
   system_memory.md                         # decisions-in-brief and lessons learned, newest first
   decisions/ADR-0001-....md                # one decision per file (see 03)
   modules/<module>.md                      # one per feature area: workflows, data, edge cases, status

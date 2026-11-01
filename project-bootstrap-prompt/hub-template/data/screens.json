@@ -1,0 +1,6 @@
+{
+  "updatedAt": "2026-01-01",
+  "items": [
+    { "id": "web-home", "app": "web-admin", "title": "Home", "note": "What this screen is for, in one sentence.", "status": "planned", "pr": "", "task": "P1-2", "images": {}, "device": "desktop" }
+  ]
+}

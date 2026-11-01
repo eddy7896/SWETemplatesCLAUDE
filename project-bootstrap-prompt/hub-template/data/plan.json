@@ -1,0 +1,8 @@
+{
+  "updatedAt": "2026-01-01T00:00:00Z",
+  "items": [
+    { "id": "P0-1", "name": "Repository, workspace tooling and scripts", "phase": 0, "phaseName": "Foundation", "milestone": "", "order": 1, "status": "done", "pct": 100, "pr": "#1" },
+    { "id": "P0-2", "name": "Documents and ADRs", "phase": 0, "phaseName": "Foundation", "milestone": "", "order": 2, "status": "doing", "pct": 60, "pr": "" },
+    { "id": "P1-1", "name": "First user journey (server)", "phase": 1, "phaseName": "First release", "milestone": "", "order": 10, "status": "todo", "pct": 0, "pr": "" }
+  ]
+}

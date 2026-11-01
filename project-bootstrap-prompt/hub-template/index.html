@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Project Hub</title>
+<!--
+  Project Hub template. One file, no build step, no framework.
+  Data comes from a store adapter (see STORE below):
+    - static: fetches ./data/*.json (works on any static host, also `python3 -m http.server`)
+    - artifact: reads and writes the host's shared database when `window.claude.use('db')` exists
+  Every value is inserted with textContent, never innerHTML, so data cannot inject markup.
+  Replace colours with your project's tokens. Keep text >= 13px and tap targets >= 44px.
+-->
+<style>
+:root{--bg:#f6f7fb;--panel:#fff;--ink:#161a3a;--muted:#5a607c;--line:#e0e3ee;--line2:#c3c8da;--accent:#3b3fd6;--accent-soft:#e9eafc;--on-accent:#fff;--ok:#0f7a4a;--ok-soft:#dcf4e7;--warn:#8a5a00;--warn-soft:#fdf0cf;--bad:#b3261e;--bad-soft:#fde4e1;--font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,Menlo,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--font);padding-inline:max(16px,env(safe-area-inset-left))}
+.wrap{max-width:1080px;margin-inline:auto;padding-block:24px 64px;display:flex;flex-direction:column;gap:18px}
+h1{margin:0;font-size:26px}h2,h3{margin:0}
+.note{color:var(--muted);font-size:13px;margin:0;max-width:74ch}
+.top{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between}
+.big{font-size:52px;line-height:1;font-weight:700;font-variant-numeric:tabular-nums}.big small{font-size:14px;color:var(--muted);font-weight:500;margin-inline-start:6px}
+.track{height:8px;background:var(--line);border-radius:4px;overflow:hidden}.fill{height:100%;background:var(--accent)}
+nav.tabs{position:sticky;top:0;z-index:5;display:flex;gap:4px;background:var(--bg);padding-block:8px;border-bottom:1px solid var(--line);overflow-x:auto}
+nav.tabs button{border:0;background:none;padding:10px 14px;border-radius:8px;cursor:pointer;font:inherit;font-weight:600;color:var(--muted);white-space:nowrap;min-height:44px}
+nav.tabs button[aria-selected=true]{background:var(--accent-soft);color:var(--accent)}
+.count{font-family:var(--mono);font-size:12px;margin-inline-start:6px;background:var(--bad);color:#fff;border-radius:99px;padding:1px 7px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px}
+details.phase>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) 120px 52px;gap:12px;align-items:center;padding:14px 16px}
+details.phase>summary::-webkit-details-marker{display:none}
+.pct{font-variant-numeric:tabular-nums;font-weight:600;text-align:end}
+table.tasks{width:100%;border-collapse:collapse}table.tasks td{padding:8px 12px;border-top:1px solid var(--line);vertical-align:middle}
+td.id{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.chip{display:inline-block;padding:1px 10px;border-radius:99px;font-size:12px;font-weight:600;border:1px solid var(--line2);white-space:nowrap}
+.chip.done,.chip.approved{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.chip.doing,.chip.partial{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.chip.blocked,.chip.changes{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.chip.waived{border-style:dashed;color:var(--muted)}.chip.none{color:var(--muted)}
+button.rv,button.save,button.ghost,.seg button{font:inherit;cursor:pointer;border-radius:8px;min-height:36px}
+.rv{border:1px solid var(--line2);background:none;padding:3px 10px;font-weight:600;font-size:12px}
+.save{background:var(--accent);color:var(--on-accent);border:0;padding:7px 16px;font-weight:600}
+.ghost{background:none;border:1px solid var(--line2);padding:6px 14px}
+.rvbox{padding:12px 16px;background:var(--accent-soft);border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.rvbox textarea{width:100%;min-height:64px;font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line2);border-radius:8px;padding:8px}
+.rvbox .opts{display:flex;gap:8px;flex-wrap:wrap}.rvbox .opts button{padding:6px 14px;border:1px solid var(--line2);background:var(--panel);border-radius:8px;font:inherit;font-weight:600;cursor:pointer}
+.rvbox .opts button[aria-pressed=true]{background:var(--ink);color:#fff}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:16px}
+.card{padding:12px;display:flex;flex-direction:column;gap:8px}.card img{max-width:100%;border:1px solid var(--line);border-radius:8px}
+.ph{display:grid;place-items:center;min-height:140px;border:1px dashed var(--line2);border-radius:8px;color:var(--muted);text-align:center;padding:12px}
+.gs{border-radius:10px;padding:10px 14px;border:1px solid var(--line);background:var(--panel)}.gs.bad{background:var(--bad-soft);border-color:transparent}.gs.ok{background:var(--ok-soft);border-color:transparent}
+table.gt{width:100%;border-collapse:collapse;font-size:13px}table.gt th{text-align:start;font-size:12px;text-transform:uppercase;color:var(--muted);padding:6px 10px;border-bottom:1px solid var(--line2)}table.gt td{padding:8px 10px;border-top:1px solid var(--line)}
+.flow{padding:16px;display:flex;flex-direction:column;gap:8px;overflow-x:auto}.flow pre{margin:0;white-space:pre-wrap}
+.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:13px}.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-inline-end:6px;vertical-align:-1px}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden}.seg button{border:0;background:none;padding:6px 14px;font-weight:600}.seg button[aria-pressed=true]{background:var(--accent);color:var(--on-accent)}
+input[type=search]{font:inherit;padding:8px 12px;border:1px solid var(--line2);border-radius:8px;width:min(100%,360px);background:var(--panel);color:var(--ink)}
+dl.gl{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:8px;margin:0}.gi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}.gi dt{font-weight:700}.gi dd{margin:2px 0 0;color:var(--muted)}
+[hidden]{display:none!important}
+@media(max-width:640px){details.phase>summary{grid-template-columns:minmax(0,1fr) 44px}.track.inline{display:none}.big{font-size:42px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div><h1 id="title">Project Hub</h1><p class="note" id="subtitle"></p></div>
+    <div class="big"><span id="big">–</span>%<small>of <span id="ntasks">0</span> planned tasks</small></div>
+  </header>
+  <div class="track" aria-hidden="true"><div class="fill" id="bigfill" style="width:0"></div></div>
+
+  <nav class="tabs" role="tablist" aria-label="Sections" id="tabs"></nav>
+
+  <section id="p-progress" role="tabpanel"><p class="note" id="progressnote">Press Review beside a phase or task to approve it or ask for changes.</p><div id="phases" style="display:flex;flex-direction:column;gap:12px;margin-top:12px"></div></section>
+  <section id="p-queue" role="tabpanel" hidden><div id="queue" style="display:flex;flex-direction:column;gap:12px"></div></section>
+  <section id="p-screens" role="tabpanel" hidden><div id="scrhost"></div></section>
+  <section id="p-flow" role="tabpanel" hidden><div class="legend" id="legend"></div><div id="flows" style="display:flex;flex-direction:column;gap:16px;margin-top:12px"></div></section>
+  <section id="p-git" role="tabpanel" hidden><div id="githost"></div></section>
+  <section id="p-glossary" role="tabpanel" hidden><input type="search" id="gsearch" placeholder="Search terms" aria-label="Search terms"><div id="gbody" style="margin-top:12px"></div></section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  /* ---------- store adapter: the only place that knows where data lives ---------- */
+  var FILES = { plan: 'plan.json', reviews: 'reviews.json', screens: 'screens.json', flows: 'flows.json', git: 'git.json', glossary: 'glossary.json', info: 'info.json' };
+  var STORE = {
+    kind: 'static', db: null, canWrite: false,
+    load: function (name) { return fetch('data/' + FILES[name], { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); },
+    saveReview: function () { return Promise.reject(new Error('read-only')); }
+  };
+  // Artifact-style shared database: documents plan/tasks, reviews/<key>, screens, flows, git, glossary (see 10-hub-data-model.md).
+  function useDb() {
+    if (!(window.claude && window.claude.use)) return Promise.resolve();
+    return window.claude.use('db').then(function (db) {
+      if (!db) return;
+      STORE.kind = 'db'; STORE.db = db; STORE.canWrite = true;
+      STORE.load = function (name) {
+        if (name === 'plan') return db.doc('plan/tasks').get().then(function (s) { return s && s.exists !== false ? s.data() : null; });
+        if (name === 'reviews') return db.collection('reviews').get().then(function (snap) { var items = []; snap.forEach(function (d) { items.push(d.data()); }); return { items: items }; });
+        return db.doc('hub/' + name).get().then(function (s) { return s && s.exists !== false ? s.data() : null; });
+      };
+      STORE.saveReview = function (key, rec) { return db.doc('reviews/' + key).set(rec); };
+    }).catch(function () {});
+  }
+
+  /* ---------- helpers ---------- */
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function key(s) { return String(s).replace(/[^A-Za-z0-9_\-]/g, '_'); }
+  function avg(list) { var l = list.filter(function (t) { return t.status !== 'waived'; }); return l.length ? l.reduce(function (s, t) { return s + (t.pct || 0); }, 0) / l.length : 0; }
+  var STATUS = { done: 'Done', doing: 'In progress', todo: 'Not started', blocked: 'Blocked', waived: 'Waived' };
+  var D = { plan: { items: [] }, reviews: { items: [] }, screens: { items: [] }, flows: { diagrams: [], legend: [] }, git: {}, glossary: { items: [] }, info: {} };
+  var reviews = {};
+
+  /* ---------- tabs ---------- */
+  var TABS = [['progress', 'Progress'], ['queue', 'Owner review'], ['screens', 'Screens'], ['flow', 'System flow'], ['git', 'Git'], ['glossary', 'Glossary']];
+  var tabsEl = document.getElementById('tabs');
+  TABS.forEach(function (t) {
+    var b = el('button', null, t[1]); b.type = 'button'; b.id = 't-' + t[0]; b.setAttribute('role', 'tab'); b.setAttribute('aria-controls', 'p-' + t[0]);
+    if (t[0] === 'queue') { var c = el('span', 'count', '0'); c.id = 'qcount'; c.hidden = true; b.appendChild(c); }
+    b.addEventListener('click', function () { show(t[0]); }); tabsEl.appendChild(b);
+  });
+  var shown = {};
+  function show(name) {
+    TABS.forEach(function (t) { document.getElementById('t-' + t[0]).setAttribute('aria-selected', String(t[0] === name)); document.getElementById('p-' + t[0]).hidden = t[0] !== name; });
+    if (name === 'flow' && !shown.flow) { shown.flow = true; renderFlows(); }
+    if (name === 'screens') renderScreens();
+    try { history.replaceState(null, '', '#' + name); } catch (e) {}
+  }
+
+  /* ---------- review control ---------- */
+  function decisionOf(k) { var r = reviews[k]; return r ? r.decision : 'none'; }
+  function word(d) { return d === 'approved' ? 'Approved' : d === 'changes' ? 'Changes requested' : 'Not reviewed'; }
+  function reviewButton(k, kind, label, host) {
+    var wrap = el('span'); wrap.style.cssText = 'display:inline-flex;gap:8px;align-items:center';
+    var d = decisionOf(k);
+    wrap.appendChild(el('span', 'chip ' + (d === 'none' ? 'none' : d), word(d)));
+    var b = el('button', 'rv', 'Review'); b.type = 'button'; b.setAttribute('aria-label', 'Review ' + label);
+    b.addEventListener('click', function (ev) { ev.preventDefault(); ev.stopPropagation(); toggleEditor(k, kind, label, host()); });
+    wrap.appendChild(b); return wrap;
+  }
+  function toggleEditor(k, kind, label, host) {
+    var ex = host.querySelector('.rvbox[data-k="' + k + '"]'); if (ex) { ex.remove(); return; }
+    var box = el('div', 'rvbox'); box.setAttribute('data-k', k);
+    var cur = reviews[k] || {}, dec = cur.decision || '';
+    box.appendChild(el('strong', null, 'Review: ' + label));
+    var opts = el('div', 'opts'), ba = el('button', null, 'Approve'), bc = el('button', null, 'Request changes'); ba.type = bc.type = 'button';
+    function paint() { ba.setAttribute('aria-pressed', String(dec === 'approved')); bc.setAttribute('aria-pressed', String(dec === 'changes')); }
+    ba.onclick = function () { dec = 'approved'; paint(); }; bc.onclick = function () { dec = 'changes'; paint(); }; paint();
+    opts.appendChild(ba); opts.appendChild(bc); box.appendChild(opts);
+    var ta = el('textarea'); ta.setAttribute('aria-label', 'Comment'); ta.placeholder = 'What should change, or what looks good'; ta.value = cur.comment || ''; box.appendChild(ta);
+    var row = el('div'); row.style.cssText = 'display:flex;gap:10px;align-items:center;flex-wrap:wrap';
+    var sv = el('button', 'save', 'Save review'), cl = el('button', 'ghost', 'Close'), msg = el('span', 'note'); sv.type = cl.type = 'button';
+    cl.onclick = function () { box.remove(); };
+    sv.onclick = function () {
+      if (!dec) { msg.textContent = 'Choose Approve or Request changes first.'; return; }
+      if (dec === 'changes' && !ta.value.trim()) { msg.textContent = 'Say what should change.'; return; }
+      if (!STORE.canWrite) { msg.textContent = 'This view is read-only. Reviews are saved when the hub runs on a host with a shared database.'; return; }
+      sv.disabled = true; msg.textContent = 'Saving…';
+      var rec = { target: k, kind: kind, label: label, decision: dec, comment: ta.value.trim(), at: new Date().toISOString() };
+      STORE.saveReview(key(k), rec).then(function () { reviews[k] = rec; msg.textContent = 'Saved.'; sv.disabled = false; renderQueue(); }, function () { msg.textContent = 'Could not save. You need edit access.'; sv.disabled = false; });
+    };
+    row.appendChild(sv); row.appendChild(cl); row.appendChild(msg); box.appendChild(row); host.appendChild(box); ta.focus();
+  }
+
+  /* ---------- progress ---------- */
+  function renderProgress() {
+    var items = D.plan.items.slice().sort(function (a, b) { return a.order - b.order; });
+    var all = avg(items);
+    document.getElementById('big').textContent = items.length ? String(Math.round(all)) : '–';
+    document.getElementById('ntasks').textContent = String(items.filter(function (t) { return t.status !== 'waived'; }).length);
+    document.getElementById('bigfill').style.width = all + '%';
+    var host = document.getElementById('phases'); host.textContent = '';
+    if (!items.length) { host.appendChild(el('p', 'note', 'The plan is empty. Seed it from the implementation plan (10, section 10).')); return; }
+    var by = {}; items.forEach(function (t) { (by[t.phase] = by[t.phase] || []).push(t); });
+    Object.keys(by).map(Number).sort(function (a, b) { return a - b; }).forEach(function (p) {
+      var list = by[p], name = list[0].phaseName || ('Phase ' + p), pct = avg(list);
+      var d = el('details', 'panel phase'); if (pct > 0 && pct < 100) d.open = true;
+      var s = el('summary'); var h = el('div'); h.appendChild(el('span', 'note', 'Phase ' + p)); h.appendChild(el('h2', null, name)); s.appendChild(h);
+      var tr = el('div', 'track inline'); var f = el('div', 'fill'); f.style.width = pct + '%'; tr.appendChild(f); s.appendChild(tr); s.appendChild(el('div', 'pct', Math.round(pct) + '%')); d.appendChild(s);
+      var tb = el('table', 'tasks'); var tbody = el('tbody');
+      list.forEach(function (t) {
+        var tr2 = el('tr'); tr2.appendChild(el('td', 'id', t.id));
+        var nm = el('td'); nm.appendChild(el('span', null, t.name)); if (t.pr) nm.appendChild(el('span', 'note', '  ' + t.pr)); tr2.appendChild(nm);
+        var st = el('td'); st.appendChild(el('span', 'chip ' + t.status, STATUS[t.status] || t.status)); tr2.appendChild(st);
+        tr2.appendChild(el('td', 'pct', (t.pct || 0) + '%'));
+        var rvTd = el('td'); rvTd.appendChild(reviewButton(t.id, 'task', t.id + ' ' + t.name, function () { return d; })); tr2.appendChild(rvTd);
+        tbody.appendChild(tr2);
+      });
+      tb.appendChild(tbody); d.appendChild(tb); host.appendChild(d);
+    });
+  }
+
+  /* ---------- owner review queue ---------- */
+  function renderQueue() {
+    var host = document.getElementById('queue'); host.textContent = '';
+    var open = Object.keys(reviews).map(function (k) { return reviews[k]; }).filter(function (r) { return r.decision === 'changes' && !r.resolved; });
+    var waiting = D.plan.items.filter(function (t) { return t.status === 'done' && !reviews[t.id]; });
+    var c = document.getElementById('qcount'); c.textContent = String(open.length); c.hidden = open.length === 0;
+    function item(title, meta, body) { var q = el('div', 'panel'); q.style.cssText = 'padding:12px 16px;display:flex;flex-direction:column;gap:4px'; q.appendChild(el('strong', null, title)); if (body) q.appendChild(el('p', null, body)); q.appendChild(el('span', 'note', meta)); return q; }
+    host.appendChild(el('h2', null, 'Changes requested (' + open.length + ')'));
+    if (!open.length) host.appendChild(el('p', 'note', 'Nothing waiting for the agent.'));
+    open.forEach(function (r) { host.appendChild(item(r.label || r.target, r.at || '', r.comment)); });
+    host.appendChild(el('h2', null, 'Done and awaiting your review (' + waiting.length + ')'));
+    if (!waiting.length) host.appendChild(el('p', 'note', 'Nothing awaiting review.'));
+    waiting.forEach(function (t) { host.appendChild(item(t.id + ' ' + t.name, t.pr || '', '')); });
+  }
+
+  /* ---------- screens ---------- */
+  var scrLang = 'en';
+  function renderScreens() {
+    var host = document.getElementById('scrhost'); host.textContent = '';
+    var langs = {}; D.screens.items.forEach(function (s) { Object.keys(s.images || {}).forEach(function (l) { langs[l] = 1; }); }); if (!Object.keys(langs).length) langs.en = 1;
+    var bar = el('div'); bar.style.cssText = 'display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px';
+    bar.appendChild(el('p', 'note', 'Real screens from the code with sample data. Approve each or ask for changes.'));
+    var seg = el('div', 'seg'); seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'Language of the screens');
+    Object.keys(langs).forEach(function (l) { var b = el('button', null, l); b.type = 'button'; b.setAttribute('aria-pressed', String(l === scrLang)); b.onclick = function () { scrLang = l; renderScreens(); }; seg.appendChild(b); });
+    bar.appendChild(seg); host.appendChild(bar);
+    var apps = {}; D.screens.items.forEach(function (s) { (apps[s.app] = apps[s.app] || []).push(s); });
+    Object.keys(apps).forEach(function (a) {
+      host.appendChild(el('h2', null, a)); var g = el('div', 'cards'); g.style.margin = '8px 0 20px';
+      apps[a].forEach(function (s) {
+        var c = el('div', 'panel card'); c.appendChild(el('h3', null, s.title)); c.appendChild(el('p', 'note', s.note || ''));
+        var img = (s.images || {})[scrLang] || (s.images || {}).en;
+        if (img && s.status !== 'planned') { var im = el('img'); im.src = img; im.alt = s.title + ' (' + scrLang + ')'; im.loading = 'lazy'; c.appendChild(im); } else { c.appendChild(el('div', 'ph', s.status === 'planned' ? 'Planned: not built yet' : 'No image yet')); }
+        var meta = el('div'); meta.style.cssText = 'display:flex;gap:8px;align-items:center;flex-wrap:wrap';
+        meta.appendChild(el('span', 'chip ' + (s.status === 'built' ? 'done' : s.status === 'open-pr' ? 'doing' : 'none'), s.status === 'open-pr' ? 'Open pull request' : s.status));
+        if (s.task) meta.appendChild(el('span', 'note', s.task + (s.pr ? ' · ' + s.pr : '')));
+        c.appendChild(meta); c.appendChild(reviewButton('screen_' + s.id, 'screen', s.title, function () { return c; })); g.appendChild(c);
+      });
+      host.appendChild(g);
+    });
+    if (!D.screens.items.length) host.appendChild(el('p', 'note', 'No screens yet.'));
+  }
+
+  /* ---------- flows ---------- */
+  function renderFlows() {
+    var lg = document.getElementById('legend'); lg.textContent = '';
+    (D.flows.legend || []).forEach(function (l) { var s = el('span'); var i = el('i'); i.style.background = l['class'] === 'built' ? '#0f7a4a' : '#c3c8da'; s.appendChild(i); s.appendChild(document.createTextNode(l.label)); lg.appendChild(s); });
+    var host = document.getElementById('flows'); host.textContent = '';
+    (D.flows.diagrams || []).forEach(function (d, n) {
+      var s = el('section', 'panel flow'); s.appendChild(el('h3', null, (n + 1) + '. ' + d.title)); if (d.note) s.appendChild(el('p', 'note', d.note));
+      var pre = el('pre', 'mermaid', d.source || ''); s.appendChild(pre); host.appendChild(s);
+    });
+    // Mermaid is optional: self-host the script next to this file (never load unpinned third-party code). Without it the source text stays visible.
+    if (window.mermaid) { try { window.mermaid.initialize({ startOnLoad: false }); window.mermaid.run({ querySelector: '#flows .mermaid' }); } catch (e) {} }
+  }
+
+  /* ---------- git ---------- */
+  function renderGit() {
+    var g = D.git || {}, host = document.getElementById('githost'); host.textContent = '';
+    host.appendChild(el('p', 'note', 'Facts read from the repository and host on: ' + (g.readAt || 'unknown') + '. If this date is old, run the refresh routine.'));
+    (g.status || []).forEach(function (s) { var d = el('div', 'gs ' + (s.tone === 'ok' ? 'ok' : 'bad'), s.text); d.style.marginTop = '8px'; host.appendChild(d); });
+    function table(title, cols, rows) {
+      if (!rows || !rows.length) return; host.appendChild(el('h2', null, title)).style.margin = '18px 0 6px';
+      var t = el('table', 'gt'), hd = el('tr'); cols.forEach(function (c) { hd.appendChild(el('th', null, c[1])); }); var th = el('thead'); th.appendChild(hd); t.appendChild(th);
+      var tb = el('tbody'); rows.forEach(function (r) { var tr = el('tr'); cols.forEach(function (c) { tr.appendChild(el('td', null, r[c[0]] == null ? '' : String(r[c[0]]))); }); tb.appendChild(tr); }); t.appendChild(tb);
+      var w = el('div'); w.style.overflowX = 'auto'; w.appendChild(t); host.appendChild(w);
+    }
+    table('Branches', [['name', 'Branch'], ['owner', 'Owner'], ['purpose', 'Purpose'], ['ahead', 'Ahead'], ['behind', 'Behind']], g.branches);
+    table('Pull requests', [['pr', 'PR'], ['title', 'Title'], ['state', 'State'], ['branch', 'Branch'], ['task', 'Task']], g.ledger);
+    function list(title, items) { if (!items || !items.length) return; host.appendChild(el('h2', null, title)).style.margin = '18px 0 6px'; var ol = el('ol'); items.forEach(function (x) { ol.appendChild(el('li', null, x)); }); host.appendChild(ol); }
+    list('Merge rules', g.rules); list('Owner actions', g.ownerActions);
+  }
+
+  /* ---------- glossary ---------- */
+  function renderGlossary() {
+    var body = document.getElementById('gbody'); body.textContent = '';
+    var dl = el('dl', 'gl'); (D.glossary.items || []).slice().sort(function (a, b) { return a.term.localeCompare(b.term); }).forEach(function (g) {
+      var i = el('div', 'gi'); i.setAttribute('data-q', (g.term + ' ' + g.definition).toLowerCase()); i.appendChild(el('dt', null, g.term)); i.appendChild(el('dd', null, g.definition)); dl.appendChild(i);
+    }); body.appendChild(dl);
+    document.getElementById('gsearch').oninput = function () { var q = this.value.trim().toLowerCase(); Array.prototype.forEach.call(dl.children, function (n) { n.hidden = !!q && n.getAttribute('data-q').indexOf(q) === -1; }); };
+  }
+
+  /* ---------- boot ---------- */
+  function boot() {
+    var names = Object.keys(FILES);
+    Promise.all(names.map(function (n) { return STORE.load(n); })).then(function (res) {
+      names.forEach(function (n, i) { if (res[i]) D[n] = res[i]; });
+      reviews = {}; (D.reviews.items || []).forEach(function (r) { reviews[r.target] = r; });
+      document.getElementById('title').textContent = D.info.title || 'Project Hub';
+      document.getElementById('subtitle').textContent = D.info.subtitle || '';
+      document.title = D.info.title || 'Project Hub';
+      renderProgress(); renderQueue(); renderGit(); renderGlossary();
+      show((location.hash || '').slice(1) && document.getElementById('p-' + location.hash.slice(1)) ? location.hash.slice(1) : 'progress');
+    });
+  }
+  useDb().then(boot);
+})();
+</script>
+</body>
+</html>

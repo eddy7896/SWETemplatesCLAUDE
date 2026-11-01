@@ -1,0 +1,8 @@
+{
+  "readAt": "not read yet",
+  "status": [{ "tone": "bad", "text": "Not read from the repository yet: run the refresh routine (11, section 3)." }],
+  "branches": [],
+  "ledger": [],
+  "rules": ["Never push to the production or pre-production branch directly."],
+  "ownerActions": ["Switch on branch protection and environments (06, section 6)."]
+}

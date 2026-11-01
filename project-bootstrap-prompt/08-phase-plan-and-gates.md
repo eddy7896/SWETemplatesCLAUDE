@@ -46,7 +46,7 @@ Typical ordering inside a feature: **ADR → server (data, rules, audit, tests) 
 - **Owner actions** outstanding.
 - A statement: *closed* or *cannot close yet because ...*.
 
-## 6. The live record
+## 6. The live record (the Project Hub: see `09`)
 The owner needs to read progress without opening the repository. Maintain:
 - the plan table (status and percent) as the source;
 - `CLAUDE.md` "Current reality" updated at each gate;

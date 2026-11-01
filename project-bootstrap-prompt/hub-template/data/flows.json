@@ -1,0 +1,12 @@
+{
+  "updatedAt": "2026-01-01",
+  "legend": [{ "label": "Built and tested", "class": "built" }, { "label": "Planned, or not yet tested against the real service", "class": "plan" }],
+  "diagrams": [
+    {
+      "id": "connect", "title": "How the pieces connect",
+      "note": "Replace with the approved architecture from system_architecture.md.",
+      "kind": "mermaid",
+      "source": "flowchart LR\n  CLIENT[\"Client apps\"]:::plan --> API[\"API\"]:::plan --> DB[(\"Database\")]:::plan\n  classDef built fill:#dcf4e7,stroke:#0f7a4a\n  classDef plan fill:#eceef6,stroke:#9aa1bd,stroke-dasharray: 4 3"
+    }
+  ]
+}

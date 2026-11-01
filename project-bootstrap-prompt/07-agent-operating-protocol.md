@@ -27,6 +27,7 @@ Copy section 1 and section 3 into `CLAUDE.md`. This file is what keeps session 5
 4. Documents are updated: status of the task/module, an ADR if a decision changed, the glossary for new terms, `CLAUDE.md` "Current reality" if something new now exists.
 5. The summary states what was **run** and what was **not verified**, with numbers.
 6. A pull request exists through the branch model, with the template filled in.
+7. The Project Hub is refreshed (plan data, screens, flows, git facts as relevant) and the summary says what changed on it.
 
 ## 4. Task loop
 1. **Read**: the task row, its module document, the ADRs it cites, the guardrails touching it.
